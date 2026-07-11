@@ -1,0 +1,51 @@
+fixture Robin600E:
+    manufacturer: Robe
+    type: moving_head
+    weight: 19.5kg
+    power: 480W
+
+    channel pan:
+        attribute: pan
+        resolution: 16bit
+        cap 0..65535: open
+
+    channel tilt:
+        attribute: tilt
+        resolution: 16bit
+        cap 0..65535: open
+
+    channel dimmer:
+        attribute: intensity
+        resolution: 16bit
+        cap 0..65535: open
+
+    channel gobo:
+        attribute: gobo
+        resolution: 8bit
+        cap 0..9: open
+        cap 10..19: gobo(slot=1)
+        cap 20..29: gobo(slot=1, spin=cw)
+        cap 30..39: gobo(slot=2)
+        cap 40..49: gobo(slot=2, spin=cw)
+
+    channel color:
+        attribute: color
+        resolution: 8bit
+        cap 0..9: open
+        cap 10..19: color(hex=#FF0000, name=Red)
+        cap 20..29: color(hex=#00FF00, name=Green)
+        cap 30..39: color(hex=#0000FF, name=Blue)
+        cap 40..49: color(hex=#FFFF00, name=Yellow)
+
+    channel strobe:
+        attribute: strobe
+        resolution: 8bit
+        cap 0..9: closed
+        cap 10..255: strobe
+
+    mode standard(8ch):
+        1,2: pan
+        3,4: tilt
+        5,6: dimmer
+        7: gobo
+        8: color
