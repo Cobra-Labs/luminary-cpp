@@ -34,10 +34,11 @@ bool Patch::has_collision(int universe_id, int start_address, int channel_count,
         // eigener Entry beim Move-Fall -> überspringen
         if (entry.id == exclude_id) continue;
 
-        // wie viele Kanäle belegt der existierende Entry?
+        // wie viele Kanäle belegt der existierende Entry (in seinem
+        // tatsächlich gepatchten Mode, nicht immer modes[0])?
         const int existing_channels = entry.fixture->modes.empty()
             ? 1
-            : entry.fixture->modes[0].channel_count;
+            : entry.fixture->modes[static_cast<size_t>(entry.mode_index)].channel_count;
 
         // Bereich des existierenden Entries
         const int existing_start = entry.start_address.value;
@@ -57,11 +58,34 @@ bool Patch::has_collision(int universe_id, int start_address, int channel_count,
 
 std::string Patch::add(std::shared_ptr<ofl::Fixture> fixture,
                         int universe_id,
-                        DmxAddress start_address) {
-    // Wie viele Kanäle braucht die Fixture?
+                        DmxAddress start_address,
+                        int mode_index) {
+    if (mode_index < 0 || (!fixture->modes.empty() && mode_index >= static_cast<int>(fixture->modes.size()))) {
+        throw std::out_of_range(
+            "Invalid mode index " + std::to_string(mode_index) +
+            " for fixture '" + fixture->name + "' (has " +
+            std::to_string(fixture->modes.size()) + " modes)"
+        );
+    }
+
+    // Wie viele Kanäle braucht die Fixture im gewählten Mode?
     const int channel_count = fixture->modes.empty()
         ? 1
-        : fixture->modes[0].channel_count;
+        : fixture->modes[static_cast<size_t>(mode_index)].channel_count;
+
+    // Adressbereich-Check: darf nicht über Kanal 512 hinausragen.
+    // DmxAddress garantiert bereits start_address.value in [1, 512],
+    // aber start_address + channel_count - 1 kann trotzdem drüber liegen.
+    const int end_address = start_address.value + channel_count - 1;
+    if (end_address > 512) {
+        throw std::out_of_range(
+            "Patch out of range in universe " + std::to_string(universe_id) +
+            ": fixture '" + fixture->name + "' at address " +
+            std::to_string(start_address.value) + " needs " +
+            std::to_string(channel_count) + " channels, would end at " +
+            std::to_string(end_address) + " (max 512)"
+        );
+    }
 
     // Kollision prüfen
     if (has_collision(universe_id, start_address.value, channel_count)) {
@@ -77,7 +101,8 @@ std::string Patch::add(std::shared_ptr<ofl::Fixture> fixture,
         generate_id(),
         fixture,
         universe_id,
-        start_address
+        start_address,
+        mode_index
     };
 
     const std::string id = entry.id;
