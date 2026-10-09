@@ -1,3 +1,6 @@
 [submodule "third_party/open-fixture-language"]
 	path = third_party/open-fixture-language
 	url = https://github.com/Cobra-Labs/open-fixture-language.git
+[submodule "third_party/tomlplusplus"]
+	path = third_party/tomlplusplus
+	url = https://github.com/marzer/tomlplusplus.git
