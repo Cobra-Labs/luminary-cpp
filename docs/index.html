@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Luminary | C++ Lighting Engine</title>
+  <meta
+    name="description"
+    content="Luminary is a C++ lighting control engine with Art-Net, fixture support, remote bridge, and real-time control features."
+  />
+  <style>
+    :root{
+      --bg:#07111f;
+      --bg-soft:#0d1a2b;
+      --panel:#101f32;
+      --panel-2:#162b45;
+      --primary:#7ce6ff;
+      --secondary:#84f0bd;
+      --accent:#ffd166;
+      --text:#edf6ff;
+      --muted:#a7bdd8;
+      --border:rgba(255,255,255,0.1);
+      --shadow:0 20px 45px rgba(0,0,0,0.35);
+      --radius:18px;
+    }
+
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{
+      margin:0;
+      font-family: Inter, system-ui, -apple-system, Segoe UI, sans-serif;
+      background:
+        radial-gradient(circle at top, rgba(124,230,255,.12), transparent 30%),
+        linear-gradient(180deg, #050b14, var(--bg));
+      color:var(--text);
+      line-height:1.6;
+    }
+
+    a{color:inherit;text-decoration:none}
+    img{max-width:100%;display:block}
+    .container{width:min(1180px, calc(100% - 32px)); margin:0 auto}
+    header{
+      position:sticky; top:0; z-index:100;
+      backdrop-filter: blur(12px);
+      background:rgba(7,17,31,0.7);
+      border-bottom:1px solid var(--border);
+    }
+    nav{
+      display:flex; align-items:center; justify-content:space-between;
+      min-height:72px;
+    }
+    .brand{
+      display:flex; align-items:center; gap:12px; font-weight:700; letter-spacing:.04em;
+    }
+    .logo{
+      width:42px; height:42px; border-radius:12px;
+      display:grid; place-items:center;
+      background:linear-gradient(135deg, var(--primary), var(--secondary));
+      color:#05131f; font-weight:900; box-shadow:var(--shadow);
+    }
+    .nav-links{
+      display:flex; align-items:center; gap:26px; color:var(--muted);
+      font-size:0.96rem;
+    }
+    .nav-links a:hover{color:var(--text)}
+    .btn{
+      display:inline-flex; align-items:center; justify-content:center;
+      padding:12px 18px; border-radius:12px; font-weight:700;
+      border:1px solid var(--border); transition: .2s ease;
+    }
+    .btn.primary{
+      background:linear-gradient(135deg, var(--primary), var(--secondary));
+      color:#05131f; border:none;
+      box-shadow:var(--shadow);
+    }
+    .btn.secondary{
+      background:rgba(255,255,255,0.02);
+    }
+    .btn:hover{transform:translateY(-1px)}
+    .hero{
+      padding:88px 0 60px;
+    }
+    .hero-grid{
+      display:grid; grid-template-columns:1.25fr .75fr; gap:40px; align-items:center;
+    }
+    .eyebrow{
+      display:inline-flex; align-items:center; gap:8px;
+      background:rgba(124,230,255,.08); color:var(--primary);
+      border:1px solid rgba(124,230,255,.15);
+      border-radius:999px; padding:8px 12px; font-size:.76rem; letter-spacing:.08em; text-transform:uppercase;
+    }
+    h1{
+      font-size: clamp(2.5rem, 5vw, 5rem);
+      line-height:1.02; letter-spacing:-0.05em; margin:16px 0 18px;
+    }
+    .lead{
+      font-size:1.1rem; color:var(--muted); max-width:620px;
+    }
+    .cta-row{
+      display:flex; flex-wrap:wrap; gap:12px; margin-top:26px;
+    }
+    .stats{
+      display:flex; flex-wrap:wrap; gap:16px; margin-top:24px;
+    }
+    .stat{
+      min-width:120px; padding:14px 18px; border-radius:14px;
+      background:rgba(255,255,255,0.02); border:1px solid var(--border);
+    }
+    .stat strong{
+      display:block; font-size:1.4rem; margin-bottom:4px;
+    }
+    .stat span{color:var(--muted); font-size:.88rem}
+    .hero-card{
+      background:linear-gradient(180deg, rgba(18,34,52,.96), rgba(9,17,28,.96));
+      border:1px solid var(--border); border-radius:28px; padding:24px;
+      box-shadow:var(--shadow);
+    }
+    .mini-panel{
+      background:rgba(255,255,255,.02); border:1px solid var(--border); border-radius:18px; padding:18px;
+      margin-bottom:16px;
+    }
+    .code{
+      margin:0; color:var(--primary); font-family: ui-monospace, SFMono-Regular, monospace;
+      font-size:.9rem; line-height:1.7;
+      white-space:pre-wrap;
+    }
+    section{padding:40px 0}
+    .section-head{
+      display:flex; justify-content:space-between; align-items:end; gap:20px; margin-bottom:20px;
+    }
+    .section-head h2{
+      margin:0; font-size: clamp(1.9rem, 3vw, 3rem); letter-spacing:-.04em;
+    }
+    .section-head p{margin:0; color:var(--muted)}
+    .grid{
+      display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:22px;
+    }
+    .card{
+      background:linear-gradient(180deg, rgba(19,31,49,.96), rgba(11,18,27,.96));
+      border:1px solid var(--border); border-radius:var(--radius); padding:24px;
+      box-shadow:var(--shadow);
+    }
+    .icon{
+      width:54px;height:54px;border-radius:16px;display:grid;place-items:center;
+      background:linear-gradient(135deg, rgba(124,230,255,.18), rgba(132,240,189,.18));
+      border:1px solid rgba(124,230,255,.15);
+      font-size:1.5rem; margin-bottom:16px;
+    }
+    .card h3{margin:6px 0 10px; font-size:1.25rem}
+    .card p{margin:0; color:var(--muted)}
+    .tech{
+      padding-top:18px;
+    }
+    .stack{
+      display:grid; grid-template-columns:1.1fr .9fr; gap:22px;
+      align-items:stretch;
+    }
+    .list{
+      list-style:none; padding:0; margin:0; display:grid; gap:12px;
+    }
+    .list li{
+      display:flex; align-items:flex-start; gap:12px;
+      background:rgba(255,255,255,.02); border:1px solid var(--border); border-radius:14px; padding:14px 16px;
+      color:var(--muted);
+    }
+    .check{
+      width:22px;height:22px;border-radius:50%;
+      background:linear-gradient(135deg, var(--secondary), var(--primary));
+      display:grid; place-items:center; color:#06131d; font-weight:800;
+      flex-shrink:0; margin-top:2px;
+    }
+    .code-panel{
+      background:linear-gradient(180deg, rgba(18,34,52,.95), rgba(10,18,28,.96));
+      border:1px solid var(--border); border-radius:24px; padding:20px;
+      box-shadow:var(--shadow);
+      overflow:auto;
+    }
+    pre{
+      margin:0; color:var(--primary); font-size:.9rem; line-height:1.8;
+      font-family: ui-monospace, SFMono-Regular, monospace;
+      white-space:pre-wrap;
+    }
+    .timeline{
+      display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:20px; margin-top:10px;
+    }
+    .step{
+      background:rgba(255,255,255,.02); border:1px solid var(--border); padding:18px; border-radius:18px;
+    }
+    .step .num{
+      display:inline-grid; place-items:center; width:34px; height:34px; border-radius:10px;
+      background:linear-gradient(135deg, var(--accent), #ff9a3d);
+      color:#17120c; font-weight:800; margin-bottom:12px;
+    }
+    .step h4{margin:0 0 8px}
+    .step p{margin:0; color:var(--muted)}
+    footer{
+      padding:44px 0 70px; border-top:1px solid var(--border); color:var(--muted);
+    }
+    .footer-row{
+      display:flex; justify-content:space-between; align-items:center; gap:20px; flex-wrap:wrap;
+    }
+    @media (max-width: 900px){
+      .hero-grid, .grid, .stack, .timeline{grid-template-columns:1fr}
+      .nav-links{display:none}
+      header nav{min-height:64px}
+      .section-head{display:block}
+      .section-head p{margin-top:12px}
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container">
+      <nav>
+        <a href="#" class="brand" aria-label="Luminary home">
+          <span class="logo">L</span>
+          <span>Luminary</span>
+        </a>
+        <div class="nav-links">
+          <a href="#features">Features</a>
+          <a href="#architecture">Architecture</a>
+          <a href="#build">Build</a>
+          <a href="#roadmap">Roadmap</a>
+        </div>
+        <a class="btn primary" href="https://github.com/Cobra-Labs/luminary-cpp" target="_blank" rel="noreferrer">
+          GitHub
+        </a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="container hero-grid">
+        <div>
+          <div class="eyebrow">C++ • DMX • Art-Net • Lighting Control</div>
+          <h1>Modern lighting control, built in C++.</h1>
+          <p class="lead">
+            Luminary is a lightweight, modular lighting engine designed for modern stage and installation workflows.
+            It brings together fixture interpretation, output protocols, network services, and remote access in one coherent runtime.
+          </p>
+
+          <div class="cta-row">
+            <a class="btn primary" href="https://github.com/Cobra-Labs/luminary-cpp" target="_blank" rel="noreferrer">View Repository</a>
+            <a class="btn secondary" href="#build">Build It</a>
+          </div>
+
+          <div class="stats">
+            <div class="stat">
+              <strong>C++</strong>
+              <span>Native runtime</span>
+            </div>
+            <div class="stat">
+              <strong>Art-Net</strong>
+              <span>Output protocol</span>
+            </div>
+            <div class="stat">
+              <strong>Fixture</strong>
+              <span>OFL support</span>
+            </div>
+            <div class="stat">
+              <strong>Remote</strong>
+              <span>Bridge + UI</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="hero-card">
+          <div class="mini-panel">
+            <strong>Project snapshot</strong>
+            <div class="code">project(luminary CXX)
+set(CMAKE_CXX_STANDARD 26)
+add_library(luminary_core STATIC ...)
+add_executable(luminary ...)</div>
+          </div>
+
+          <div class="mini-panel">
+            <strong>Core capabilities</strong>
+            <div class="code">- Engine + universe model
+- Art-Net + UDP protocol layer
+- HTTP server + pin auth
+- Remote bridge + discovery
+- Fixture asset management</div>
+          </div>
+
+          <div class="mini-panel">
+            <strong>Runtime profile</strong>
+            <div class="code">- C++26
+- CMake build
+- Third-party fixture tooling
+- Cross-platform support</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="features">
+      <div class="container">
+        <div class="section-head">
+          <h2>What Luminary does</h2>
+          <p>Designed to replace older, less maintainable approaches with a cleaner C++ engine.</p>
+        </div>
+
+        <div class="grid">
+          <article class="card">
+            <div class="icon">⚙️</div>
+            <h3>Core engine</h3>
+            <p>
+              The engine layer manages the run loop, universe state, patch logic, and behavior of lighting scenes.
+              It is built to stay deterministic and efficient under real-time control.
+            </p>
+          </article>
+
+          <article class="card">
+            <div class="icon">🌐</div>
+            <h3>Network protocols</h3>
+            <p>
+              Support for UDP, Art-Net, and associated protocol handling enables communication with modern lighting systems and control infrastructure.
+            </p>
+          </article>
+
+          <article class="card">
+            <div class="icon">💡</div>
+            <h3>Fixture intelligence</h3>
+            <p>
+              Fixture definitions are treated as runtime assets. These are integrated with open fixture language tooling to keep show data and device descriptions aligned.
+            </p>
+          </article>
+
+          <article class="card">
+            <div class="icon">🔒</div>
+            <h3>Security & auth</h3>
+            <p>
+              Pin-based auth and secure endpoint patterns help keep remote access controlled, especially in networked installations and bridge scenarios.
+            </p>
+          </article>
+
+          <article class="card">
+            <div class="icon">🧩</div>
+            <h3>Remote bridge</h3>
+            <p>
+              Remote connectivity gives Luminary a bridge layer for external orchestration, service discovery, and headless integration points.
+            </p>
+          </article>
+
+          <article class="card">
+            <div class="icon">📡</div>
+            <h3>Node discovery</h3>
+            <p>
+              Built-in discovery utilities help identify peers and devices within the network, improving automation and operational visibility.
+            </p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="tech" id="architecture">
+      <div class="container">
+        <div class="section-head">
+          <h2>Architecture</h2>
+          <p>Structured around a clean separation between engine logic, protocol I/O, and runtime assets.</p>
+        </div>
+
+        <div class="stack">
+          <div class="card">
+            <ul class="list">
+              <li><span class="check">✓</span> <span><strong>Core runtime</strong><br />Universe state, engine lifecycle, patching logic, DMX types</span></li>
+              <li><span class="check">✓</span> <span><strong>Protocol layer</strong><br />Art-Net, UDP, polling, socket handling, state transfer</span></li>
+              <li><span class="check">✓</span> <span><strong>Network services</strong><br />HTTP server, discovery, remote bridge, auth gatekeeping</span></li>
+              <li><span class="check">✓</span> <span><strong>Fixtures</strong><br />Runtime fixture definitions shipped next to executable output</span></li>
+            </ul>
+          </div>
+
+          <div class="code-panel">
+            <pre>src/
+  core/
+    engine/
+    universe/
+  protocol/
+    artnet.cpp
+    artnet_poll.cpp
+    udp.cpp
+  net/
+    http_server.cpp
+    socket_server.cpp
+    node_discovery.cpp
+    pin_auth.cpp
+    remote_bridge.cpp
+  config/
+fixtures/
+third_party/</pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="build">
+      <div class="container">
+        <div class="section-head">
+          <h2>Build it locally</h2>
+          <p>Minimal setup using CMake and the included project files.</p>
+        </div>
+
+        <div class="code-panel">
+          <pre>git clone https://github.com/Cobra-Labs/luminary-cpp.git
+cd luminary-cpp
+
+cmake -S . -B build
+cmake --build build
+
+./build/luminary</pre>
+        </div>
+      </div>
+    </section>
+
+    <section id="roadmap">
+      <div class="container">
+        <div class="section-head">
+          <h2>Project direction</h2>
+          <p>A strong foundation for a stable, production-style lighting engine.</p>
+        </div>
+
+        <div class="timeline">
+          <div class="step">
+            <div class="num">1</div>
+            <h4>Foundation</h4>
+            <p>Core engine runtime and DMX-oriented model.</p>
+          </div>
+          <div class="step">
+            <div class="num">2</div>
+            <h4>Networking</h4>
+            <p>Art-Net and packet-level control paths.</p>
+          </div>
+          <div class="step">
+            <div class="num">3</div>
+            <h4>Services</h4>
+            <p>HTTP, auth, discovery, remote bridge and operational tooling.</p>
+          </div>
+          <div class="step">
+            <div class="num">4</div>
+            <h4>Production</h4>
+            <p>Stability, fixtures, real deployments and system integration.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container footer-row">
+      <div>© <span id="year"></span> Luminary</div>
+      <div>Built for modern stage and lighting systems.</div>
+    </div>
+  </footer>
+
+  <script>
+    document.getElementById("year").textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>
