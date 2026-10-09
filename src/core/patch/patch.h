@@ -15,12 +15,17 @@ namespace luminary::core {
         std::shared_ptr<ofl::Fixture> fixture;
         int universe_id;
         DmxAddress start_address;
+        int mode_index = 0; // Index in fixture->modes - welcher Mode gepatcht wurde
     };
 
     class Patch {
     public:
-        // Fixture zum Patch hinzufügen – gibt ID des PatchEntry zurück
-        std::string add(std::shared_ptr<ofl::Fixture> fixture, int universe_id, DmxAddress start_address);
+        // Fixture zum Patch hinzufügen – gibt ID des PatchEntry zurück.
+        // mode_index waehlt, welcher Mode aus fixture->modes gepatcht wird
+        // (0 = erster/Default-Mode). Wird NICHT auf modes.size() geprueft -
+        // das macht add() selbst und wirft bei ungueltigem Index.
+        std::string add(std::shared_ptr<ofl::Fixture> fixture, int universe_id,
+                         DmxAddress start_address, int mode_index = 0);
 
         // PatchEntry entfernen
         void remove(const std::string &entry_id);

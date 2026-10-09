@@ -3,6 +3,7 @@
 //
 #pragma once
 #include <string>
+#include <stdexcept>
 
 struct DmxAddress {
     int value; // 1-512

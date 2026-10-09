@@ -5,6 +5,7 @@
 #include <filesystem>
 #include <iostream>
 #include <cstdlib>
+#include <sstream>
 #include "toml++/toml.hpp"
 #include "config.h"
 
@@ -35,7 +36,27 @@ Config load_config() {
     Config cfg;
 
     const auto path = get_config_path();
+    std::error_code ec;
+    std::filesystem::create_directories(path.parent_path(), ec);
+    const auto fixture_dir = path.parent_path() / "fixtures";
+    std::filesystem::create_directories(fixture_dir, ec);
     if (!std::filesystem::exists(path)) {
+        // Keep the engine's on-disk defaults deterministic. In particular,
+        // Art-Net runs at 40 Hz by default; 44 Hz is supported as an
+        // explicit compatibility option.
+        std::ofstream out(path);
+        if (out) {
+            out << "[engine]\n"
+                << "network_interface = \"0.0.0.0\"\n"
+                << "artnet_target = \"255.255.255.255\"\n"
+                << "artnet_port = 6454\n"
+                << "mtu = 1500\n"
+                << "universe_count = 4\n"
+                << "refresh_rate_hz = 40\n\n"
+                << "[fixtures]\n"
+                << "search_paths = [\"" << fixture_dir.string() << "\"]\n";
+        }
+        cfg.fixtures.search_paths.push_back(fixture_dir.string());
         return cfg;
     }
 
@@ -76,5 +97,10 @@ Config load_config() {
         return Config{};
     }
 
+    if (cfg.fixtures.search_paths.empty()) {
+        cfg.fixtures.search_paths.push_back((path.parent_path() / "fixtures").string());
+    }
+    // Art-Net is intentionally restricted to the stable supported rates.
+    if (cfg.engine.refresh_rate_hz != 44) cfg.engine.refresh_rate_hz = 40;
     return cfg;
 }

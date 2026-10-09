@@ -1,0 +1,48 @@
+fixture StairvillePAR64:
+    manufacturer: Stairville
+    type: led_par
+    weight: 4.5kg
+    power: 36W
+
+    channel rgb:
+        attribute: color
+        resolution: 8bit
+        cap 0..63: color            # RGB-Control
+        cap 64..127: fade           # 7 Color Fade, Control Channel 5
+        cap 128..191: color_change  # 7 Color Change
+        cap 192..255: color_change  # 3 Color Change 
+
+    channel red:
+        attribute: color
+        resolution: 8bit
+        cap 0..255: color(hex=#FF0000, name=Red)
+
+    channel green:
+        attribute: color
+        resolution: 8bit
+        cap 0..255: color(hex=#00FF00, name=Green)
+            
+    channel blue:
+        attribute: color
+        resolution: 8bit
+        cap 0..255: color(hex=#0000FF, name=Blue)
+
+    channel speed:
+        attribute: speed
+        resolution: 8bit
+        cap 0..10: none
+        cap 11..100: speed
+        cap 100..150: none
+        cap 151..255: speed
+
+    mode Channel3(3ch):
+        1: red
+        2: green
+        3: blue
+
+    mode Channel5(5ch):
+        1: rgb
+        2: red
+        3: green
+        4: blue
+        5: speed
